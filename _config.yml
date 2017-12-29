@@ -20,7 +20,7 @@ description: >- # this means to ignore newlines until "baseurl:"
     It assumes prior knowledge of the C language, but does not assume any prior OS Dev knowledge.
     The tutorial is broken up into pieces, where each piece is a differenet OS Concept.  Each concept has
     explantions for how to do it, why it is done, and what purpose it serves.
-baseurl: "/raspi-os" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://jsandler18.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username:
 github_username:  jsandler18
