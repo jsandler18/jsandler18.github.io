@@ -3,16 +3,6 @@ layout: page
 title: About
 permalink: /about/
 ---
-
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
-
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
-
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
-
-
-[jekyll-organization]: https://github.com/jekyll
+This is an in depth tutorial on how to write an operating system for the raspberry pi. It assumes prior knowledge of the C language, but does not assume any prior OS Dev
+knowledge. The tutorial is broken up into pieces, where each piece is a differenet OS Concept. Each concept has explantions for how to do it, why it is done, and what
+purpose it serves.

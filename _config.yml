@@ -16,10 +16,7 @@
 title: Building an Operating System for the Raspberry Pi
 email: jsandler18@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-    This is an in depth tutorial on how to write an operating system for the raspberry pi.
-    It assumes prior knowledge of the C language, but does not assume any prior OS Dev knowledge.
-    The tutorial is broken up into pieces, where each piece is a differenet OS Concept.  Each concept has
-    explantions for how to do it, why it is done, and what purpose it serves.
+    
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://jsandler18.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username:
