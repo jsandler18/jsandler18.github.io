@@ -16,11 +16,17 @@
 title: Building an Operating System for the Raspberry Pi
 email: jsandler18@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-    
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://jsandler18.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username:
 github_username:  jsandler18
+collections:
+    tutorial:
+        output: true
+    explanations:
+        output: true
+    extra:
+        output: true
 
 # Build settings
 markdown: kramdown
