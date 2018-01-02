@@ -1,7 +1,6 @@
 ---
 layout: page
 title:  Part 2 - Getting Something to Boot
-date:   2017-12-29 11:07:26 -0500
 ---
 
 As with any new project, the best way to get started is to copy a bunch of code from somewhere and get something working, then go back and try to understand the code.  I
@@ -45,58 +44,7 @@ halt:
     b halt
 ```
 
-Lets walk through this line by line.
-
-<br>
-```
-.section ".text.boot"
-
-.globl _start
-```
-These are notes to the linker.  The first is about where this code belongs in the compiled binary.  In a little bit, we are going to specify where that is.  The second specifies that \_start is a name that should be visible from outside of the assembly file
-
-<br>
-```
-_start:
-    mov sp, #0x8000
-```
-This is the first instruction of our kernel.  It says that our C stack should start at address 0x8000 and grow downwards.  Why 0x8000?
-Well when the hardware loads our kernel in to memory, it does not load it into address 0, but to address 0x8000.  Since runs from 0x8000 and up, our stack can safely run from 0x8000 and down without clobbering our kernel.
-
-<br>
-```
-    ldr r4, =__bss_start
-    ldr r9, =__bss_end
-```
-This loads the addresses of the start end end of the BSS section into registers.  If you are not familiar with what BSS is, it is where C global variables that are not initialized at compile time are stored.  The C runtime requires that uninitialized global variables are zero, so we must zero out this entire section ourselves.  The symbols `__bss_start` and `__bss_end` are going to be defined later in when we work with the linker, so don't worry about where they come from for now.
-
-<br>
-```
-    mov r5, #0
-    mov r6, #0
-    mov r7, #0
-    mov r8, #0
-    b       2f
-
-1:
-    stmia r4!, {r5-r8}
-
-2:
-    cmp r4, r9
-    blo 1b
-```
-This code is what zeros out the BSS section.  First it loads 0 into four consecutive registers.  Then it checks whether the address stored in r4 is less than the one in r9.  If it is, then it executes `stmia r4!, {r5-r8}`.  This instruction has a lot going on for anyone not familiar with ARM.  The `stm` instruction stores the second operand into the address contained in the first.  The `ia` suffix on the instruction means *increment after*, or increment the address in r4 to the address after the last address written by the instruction.  The `!` means store that address back in r4, as opposed to throwing it out.  The `{r5-r8}` operand means that `stm` should store the values in the consecutive registers r5,r6,r7,r8 (so 16 bytes) into r4.  So overall, the instruction stores 16 bytes of zeros into the address in r4, then increments that address by 16 bytes.  This loops until r4 is greater than or equal to r9, and the whole BSS section is zeroed out.
-
-<br>
-```
-    ldr r3, =kernel_main
-    blx r3
-
-halt:
-    wfe
-    b halt
-```
-This loads the address of the C function called `kernel_main` into a register and jumps to that location.  When the C function returns, it enters the `halt` procedure where it loops forever doing nothing.
+For a line-by-line explanation of this code, [see this page](/explanations/boot_S.html)
 
 
 ## kernel.c - The C code
@@ -215,14 +163,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 }
 ```
 
-# Background on the Raspberry Pi hardware - Memory Mapped IO, Peripherals and Registers
-Before we break this into pieces, this code requires some background on the Raspberry Pi hardware.  All interactions with hardware occur through *memory mapped IO*.  Each hardware device, also known as a *peripheral* has a specific address in memory that it writes data to and/or reads data from.  The peripheral region of memory starts at 0x20000000 on the Raspberry Pi model 1, and at 0x0x3F000000 on the models 2 and 3.  Each peripheral can be described as an offset from this base address.  In the above code, we see `UART0_BASE = 0x3F201000`.  This means that the UART hardware is mapped to offset 0x201000 from the peripheral base.  This begs the questions: why 0x3F000000? why 0x201000?  The answer is that these addresses are hard wired into the hardware itself.  These are the addresses that the designers of the Raspberry Pi's chip arbitrarily decided.
-
-Each peripheral has a number of 4 byte *registers* through which data can be read from or written to.  These registers are at predefined offsets from the peripheral's base address.  For example, it is quite common for one at least one register to be a control register, where each bit in the register corresponds to a certain behavior that the hardware should have.  Another common register is a write register, where anything written in it gets sent off to the hardware.
-
-Figuring out where all the peripherals are, what registers they have, and how to use them can mostly be found in [the BCM2835 ARM peripheral manual](https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf).  The BCM2835 is the name of the chipset the Raspberry Pi model 1 uses, and most of the information is good for the model 2 and 3.  This document is not easy to parse, and it is missing quite a bit of information, but it is a good starting point, as well as proof that I am not pulling all these addresses out of thin air.
-
-Now, on to the code
+For a line-by-line explanation of this code, [see this page](/explanations/kernel_c.html)
 
 # Peripheral Specification and Basic Read and Write
 ``` c
