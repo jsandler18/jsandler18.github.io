@@ -35,5 +35,4 @@ sudo make install
 ```
 We can check if this was successful by doing `qemu-system-arm --version`
 
-
-Now that we have the environment set up, we can now build a kernel!
+Now that we have the environment set up, we can now [build a kernel](/tutorial/boot.html)!

@@ -6,6 +6,8 @@ title:  Part 2 - Getting Something to Boot
 As with any new project, the best way to get started is to copy a bunch of code from somewhere and get something working, then go back and try to understand the code.  I
 pulled this first batch of code from [the OSDev wiki](http://wiki.osdev.org/Raspberry_Pi_Bare_Bones), but I am going to post it here and explain each piece.
 
+If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/1eddfe2c6b42be11f5f01500a285b406c14e5c41).
+
 ## boot.S - The kernel entry point
 
 boot.S is going to be the first thing that the hardware executes in our kernel.  This must be done in assembly.  When the hardware loadsthe kernel, it does not set up a C
@@ -233,7 +235,7 @@ To compile this code for the VM, we must run the following commands:
 ```
 The first two commands compile boot.S and kernel.c into object code, respectively.  The second links those object files into an executable elf file.
 
-Lets take a look at those less used gcc options.  `-mcpu=cortex-a7` means that the target ARM cpu is the cortex-a7, which is what the raspberry pi model 2 has, and what our VM emulates.  `-fpic` means create position independent code.  This means that references to any function, variable, or symbol should be done relative to the current instruction, and not by an absolute address.  `-ffreestanding` means that gcc cannot depend on libc being availible at runtime, and that there may not be a `main` function as an entry point.
+Lets take a look at those less used gcc options.  `-mcpu=cortex-a7` means that the target ARM cpu is the cortex-a7, which is what the raspberry pi model 2 has, and what our VM emulates.  `-fpic` means create position independent code.  This means that references to any function, variable, or symbol should be done relative to the current instruction, and not by an absolute address.  `-ffreestanding` means that gcc cannot depend on libc being availible at runtime, and that there may not be a `main` function as an entry point.  `-nostdlib` indicates to the linker that it should not try to link in libc, which it will do by default.
 
 <br>
 To run the code in the VM, execute this command:
@@ -244,4 +246,4 @@ This runs a VM that emulates the raspberry pi model 2 with 256 megabytes of memo
 
 After running this, you should see "Hello, kernel World!" in your normal terminal. If you type in your terminal, it should echo every character.
 
-Congratulations! You have just booted your kernel!
+Now that we have a kernel that boots, we should [organize our project](/tutorial/organize.html).
