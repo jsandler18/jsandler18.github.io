@@ -3,9 +3,9 @@ layout: page
 title:  An in-depth Explanation - boot.S
 ---
 
-Recall the code for boot.S
 
-**boot.S**
+## boot.S source
+Recall the code for boot.S
 ```
 .section ".text.boot"
 
@@ -38,7 +38,8 @@ halt:
 ```
 Let's step through this line by line
 
-<br>
+## Setting up the C Runtime Environment
+
 ```
 .section ".text.boot"
 
@@ -52,7 +53,7 @@ _start:
     mov sp, #0x8000
 ```
 This is the first instruction of our kernel.  It says that our C stack should start at address 0x8000 and grow downwards.  Why 0x8000?
-Well when the hardware loads our kernel in to memory, it does not load it into address 0, but to address 0x8000.  Since runs from 0x8000 and up, our stack can safely run from 0x8000 and down without clobbering our kernel.
+Well when the hardware loads our kernel in to memory, it does not load it into address 0, but to address 0x8000.  Since our kernel runs from 0x8000 and up, our stack can safely run from 0x8000 and down without clobbering our kernel.
 
 <br>
 ```
