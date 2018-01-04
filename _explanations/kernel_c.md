@@ -119,7 +119,8 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 
 
 ## Peripheral Specification and Basic Read and Write
-Before continuing, I reccomend you read [Memory Mapped IO, Peripherals, and Registers](/extra/peripheral.html).
+If you are unfamiliar with memory mapped IO on the Raspberry Pi, I reccomend you read [Memory Mapped IO, Peripherals, and Registers](/extra/peripheral.html) before
+continuing.
 
 ``` c
 static inline void mmio_write(uint32_t reg, uint32_t data)
