@@ -75,3 +75,43 @@ Here is a map of a tag:
        +---------------------------------------------------------------+
 
 ```
+
+
+## Getting a Framebuffer
+The first step to getting a framebuffer is to set the screen size, virtual screen size, and [depth](/extra/framebuffer.html). The tag ids for these commands are
+0x00048003, 0x00048004, and 0x00048005 respectively.
+
+To set the screen size, you must pass a 4 byte width and a 4 byte height, and there is no result.  Therefore, the value buffer has size 8 for the screen size commands.
+
+To set the depth, you must pass a 4 byte depth value, and there is no result.  Therefore, the value buffer has size 4.
+
+We are going to set the screen size to 640x480, and the depth to 24.
+
+If we put these together in a message, it should look something like this:
+``` c
+80,                             // The whole buffer is 80 bytes
+0,                              // This is a request, so the request/response code is 0
+0x00048003, 8, 0, 640, 480,     // This tag sets the screen size to 640x480
+0x00048004, 8, 0, 640, 480,     // This tag sets the virtual screen size to 640x480
+0x00048005, 4, 0, 24,           // This tag sets the depth to 24 bits
+0,                              // This is the end tag
+0, 0, 0                         // This pads the message to by 16 byte aligned
+```
+We then need to send this buffer through the mailbox.  To do that, we must ensure that our our buffer is located at a 16 byte aligned address, so only the high 28 bits
+contain the address.  Then, we must bitwise or 8 with this address, setting the low 4 bits to the channel number.  Finally, we can send this through the mailbox using the
+process described [here](/extra/mailbox.html). In order to verify that this worked, we must check the request/response code of our buffer.  If it is 0, then the message
+did not go through properly, as the GPU couldn't overwrite this part with a response code.  If it is 0x80000001, then an error occured.  If it is 0x80000000, then it was
+successful.
+
+Now that we have set up the screen parameters, we can request a framebuffer. The tag id for this command is 0x00040001.  This command takes one 4 byte parameter, the
+requested alignment of the framebuffer, and returns two 4 byte values, a pointer to the buffer and the buffer size.  Therefore, the value buffer has size 8. We will be
+asking for a 16 byte aligned buffer.
+
+The messge should look like this:
+``` c
+32,                         // The whole buffer is 32 bytes
+0,                          // This is a request, so the request/response code is 0
+0x00040001, 8, 0, 16, 0,    // This tag requests a 16 byte aligned framebuffer
+0                           // This is the end tag
+```
+
