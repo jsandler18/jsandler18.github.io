@@ -37,30 +37,3 @@ To prepare this message to be sent over the mailbox, three things must be done:
 Once these are done, this value can be sent to the GPU through the mailbox.  The GPU will send back the same address through the mailbox on success, and 0 on error.
 
 You might have noticed that step 2 is a bit weird.  Why are we adding 0x40000000 to our address?  It's becaues the GPU has the RAM mapped to begin at physical address 0x40000000 (if L2 caching is enabled, which it is by default.  If it is disabled, it actually begins at 0xC0000000).  When the GPU accesses `0x40000000 + our_address` in physical memory, it is actually accessing `our_address` in RAM.  The GPU uses the physical addresses below 0x40000000 for [MMIO](/extra/peripheral.html) with hardware devices.
-
-Here is the code for getting a framebuffer on the model 1:
-``` c
-fb_init_t fbinit __attribute__((aligned(16)));
-
-int framebuffer_init(void) {
-    mail_message_t msg;
-
-    fbinit.width = 640;
-    fbinit.height = 480;
-    fbinit.vwidth = fbinit.width;
-    fbinit.vheight = fbinit.height;
-    fbinit.depth = COLORDEPTH;
-
-    msg.data = ((uint32_t)&fbinit + 0x40000000) >> 4;
-
-    mailbox_send(msg, FRAMEBUFFER_CHANNEL);
-    msg = mailbox_read(FRAMEBUFFER_CHANNEL);
-
-    if (!msg.data)
-        return -1;
-
-    /* Fill out hardware independent framebuffer info struct */
-
-    return 0;
-}
-```

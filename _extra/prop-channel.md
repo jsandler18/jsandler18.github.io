@@ -10,7 +10,8 @@ Model 2 and up.  For Model 1, you can get a framebuffer through the [framebuffer
 The property channel is a way of getting and setting data about various hardware devices, of which the framebuffer is just one.
 
 ## Property Channel Messages
-Messages have a fairly complex and poorly documented structure.  A message must be a 16 byte aligned buffer of 4 byte words.
+Messages have a fairly complex and poorly documented structure.  A message must be a 16 byte aligned buffer of 4 byte words. **The response overwrites the original
+message**
 
 A Message starts with a 4 byte size of the message, including the 4 bytes for the size itself.
 
