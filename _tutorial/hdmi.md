@@ -358,3 +358,5 @@ The next obvious step is to get keyboard input, but before we can do that, we ne
 **Previous**:
 [Part 4 - Dynamic Memory](/tutorial/dyn-mem.html)
 
+**Next**:
+[Part 6 - Interrupts](/tutorial/interrupts.html)
