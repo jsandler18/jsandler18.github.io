@@ -14,7 +14,7 @@ kernel, we are the boss.  We can take whatever memory we want and use it for wha
 space](/extra/peripheral.html)).  I have decided to use the memory range 0x100000 - 0x200000.  This range starts at 1 MB and runs for 1 MB.  I chose this because it is
 large enough that it is well outside the range of the kernel code, and small enough that it does not use up a significant chunk of memory that user code might want.
 
-Now that we have a large chunk of memory, all we need is a function to divide it up!  We want to expose the familiar interface `void * malloc(uint32_t bytes)` to do this.
+Now that we have a large chunk of memory, all we need is a function to divide it up!  We want to expose the familiar interface `void * malloc(uint32_t bytes)` in the files `src/kernel/mem.c` and `include/kernel/mem.h` to do this.
 We are going to manage this by associating each allocation with a header.  The headers will form a linked list, so we can easily traverse from the beginning of one
 allocation to the next.  It will also include a size, and whether the allocation is currently in use.  Here is the definition of the header structure:
 
