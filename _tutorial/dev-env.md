@@ -1,7 +1,6 @@
 ---
 layout: page
 title:  Part 1 - Setting up the Development Environment
-date:   2017-12-29 11:07:26 -0500
 ---
 
 Before we can dive in to creating an operating system, first we have to set up our development environment.  For many tutorials, this can be difficult, as often you will
@@ -35,4 +34,7 @@ sudo make install
 ```
 We can check if this was successful by doing `qemu-system-arm --version`
 
-Now that we have the environment set up, we can now [build a kernel](/tutorial/boot.html)!
+Now that we have the environment set up, we can now build a kernel.
+
+**Next**:
+[Part 2 - Getting Something to Boot](/tutorial/boot.html)!

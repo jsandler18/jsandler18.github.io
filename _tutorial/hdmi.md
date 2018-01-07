@@ -354,3 +354,7 @@ Here was what it should look like:
 To find out how to load your kernel on to real hardware, [see this page](/extra/hardware.html)
 
 The next obvious step is to get keyboard input, but before we can do that, we need to set up a system called interrupts.
+
+**Previous**:
+[Part 4 - Dynamic Memory](/tutorial/dyn-mem.html)
+

@@ -246,4 +246,10 @@ This runs a VM that emulates the raspberry pi model 2 with 256 megabytes of memo
 
 After running this, you should see "Hello, kernel World!" in your normal terminal. If you type in your terminal, it should echo every character.
 
-Now that we have a kernel that boots, we should [organize our project](/tutorial/organize.html).
+Now that we have a kernel that boots, we should organize our project.
+
+**Previous**:
+[Part 1 - Setting up the Development Environment](/tutorial/dev-env.html)
+
+**Next**:
+[Part 3 - Organizing our Project](/tutorial/organize.html).

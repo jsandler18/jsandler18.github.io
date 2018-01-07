@@ -115,4 +115,10 @@ static void heap_init(void) {
 
 The reason `heap_init` is inside this `mem_init` function is that later, `mem_init` will set up the rest of the memory.
 
-Next up, we are going to get our kernel to [print to a real screen](/tutorial/hdmi.html)
+Next up, we are going to get our kernel to print to a real screen.
+
+**Previous**:
+[Part 3 - Organizing our Project](/tutorial/organize.html)
+
+**Next**:
+[Part 5 - Printing to a Real Screen](/tutorial/hdmi.html)

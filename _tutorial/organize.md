@@ -135,4 +135,10 @@ L__ build/
     L__ linker.ld
 ```
 
-Now that our project is organized sensibly, lets look at a [simple way to manage memory](/tutorial/dyn-mem.html)
+Now that our project is organized sensibly, lets look at a simple way to manage memory.
+
+**Previous**:
+[Part 2 - Getting Something to Boot](/tutorial/boot.html)
+
+**Next**:
+[Part 4 - Dynamic Memory](/tutorial/dyn-mem.html)
