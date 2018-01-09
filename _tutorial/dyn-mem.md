@@ -3,7 +3,7 @@ layout: page
 title:  Part 4 - Dynamic Memory
 ---
 Now that we can boot and have a sane project structure, we can move on with developing the kernel itself.  Since we are the kernel, theoretically, we can use any memory
-we want at any time.  To impose some order and prevent shooting ourselves in the foot, it makes sense to impliment a simple memory allocator.  It is important to note
+we want at any time.  To impose some order and prevent shooting ourselves in the foot, it makes sense to implement a simple memory allocator.  It is important to note
 that this allocator is not managing all of the memory.  It just manages a small piece that the kernel will use for its data structures.
 
 If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/9eeb138e06d287cb8f42bc71587a2f6aa61c6583).
@@ -29,7 +29,7 @@ typedef struct heap_segment{
 
 To allocate, all we need to do is find the allocation that best fits the number of requested bytes and is not in use. If that allocation is very large relative to the
 size of the request, we can split up that allocation into two smaller ones, and only use one of them.  The criterion that I used to determine if an allocation needs to be
-split is if the allocation is at least twice the size of a header, since it doesn't do much good to have many allocations that are half header and half data.  Once we have an allocation, we jus return a pointer to the memory directly after the header.  Here are those ideas implimented in code:
+split is if the allocation is at least twice the size of a header, since it doesn't do much good to have many allocations that are half header and half data.  Once we have an allocation, we jus return a pointer to the memory directly after the header.  Here are those ideas implemented in code:
 
 ``` c
 void * kmalloc(uint32_t bytes) {

@@ -111,7 +111,7 @@ In `stdlib.c`, we define the functions `memcpy` and `bzero`, as these will come 
 
 In `stdio.c`, we define `getc`, `putc`, `gets` and `puts` as general purpose IO functions.  We do this even though `uart.c` had `uart_putc` and `uart_puts` because later we are going to want to swap out `uart_putc` for a function that renders text to an actuall screen, and it will be easier to replace one call to `uart_putc` here than many possible places.
 
-The implimentation of these functions is not that important. If you really want to see them, [check the git repo](https://github.com/jsandler18/raspi-kernel/tree/700b97a63c5f77a1ced814fe70d8560cba3ffacc).
+The implementation of these functions is not that important. If you really want to see them, [check the git repo](https://github.com/jsandler18/raspi-kernel/tree/700b97a63c5f77a1ced814fe70d8560cba3ffacc).
 
 Now our directory structure looks like this:
 ```

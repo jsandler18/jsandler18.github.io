@@ -281,7 +281,7 @@ int framebuffer_init(void) {
 ```
 
 ## Rendering Characters
-Now that we have a framebuffer, we want to be able to draw to it easily.  We are going to define `src/kernel/gpu.c` and `include/kernel/gpu.h` to define and impliment drawing to the screen.  We are going to expose three functions: `gpu_init(void)`, `write_pixel(void write_pixel(uint32_t x, uint32_t y, const pixel_t * pixel)`, and `gpu_putc(char c)`.
+Now that we have a framebuffer, we want to be able to draw to it easily.  We are going to define `src/kernel/gpu.c` and `include/kernel/gpu.h` to define and implement drawing to the screen.  We are going to expose three functions: `gpu_init(void)`, `write_pixel(void write_pixel(uint32_t x, uint32_t y, const pixel_t * pixel)`, and `gpu_putc(char c)`.
 
 `gpu_init` simply initializes the screen by calling `framebuffer_init()` and blacking out the screen.
 
