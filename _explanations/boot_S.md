@@ -60,7 +60,7 @@ Well when the hardware loads our kernel in to memory, it does not load it into a
     ldr r4, =__bss_start
     ldr r9, =__bss_end
 ```
-This loads the addresses of the start end end of the BSS section into registers.  If you are not familiar with what BSS is, it is where C global variables that are not initialized at compile time are stored.  The C runtime requires that uninitialized global variables are zero, so we must zero out this entire section ourselves.  The symbols `__bss_start` and `__bss_end` are going to be defined later in when we work with the linker, so don't worry about where they come from for now.
+This loads the addresses of the start end end of the BSS section into registers.  BSS is where C global variables that are not initialized at compile time are stored.  The C runtime requires that uninitialized global variables are zero, so we must zero out this entire section ourselves.  The symbols `__bss_start` and `__bss_end` are going to be defined later in when we work with the linker, so don't worry about where they come from for now.
 
 <br>
 ```
@@ -77,7 +77,7 @@ This loads the addresses of the start end end of the BSS section into registers.
     cmp r4, r9
     blo 1b
 ```
-This code is what zeros out the BSS section.  First it loads 0 into four consecutive registers.  Then it checks whether the address stored in r4 is less than the one in r9.  If it is, then it executes `stmia r4!, {r5-r8}`.  This instruction has a lot going on for anyone not familiar with ARM.  The `stm` instruction stores the second operand into the address contained in the first.  The `ia` suffix on the instruction means *increment after*, or increment the address in r4 to the address after the last address written by the instruction.  The `!` means store that address back in r4, as opposed to throwing it out.  The `{r5-r8}` operand means that `stm` should store the values in the consecutive registers r5,r6,r7,r8 (so 16 bytes) into r4.  So overall, the instruction stores 16 bytes of zeros into the address in r4, then increments that address by 16 bytes.  This loops until r4 is greater than or equal to r9, and the whole BSS section is zeroed out.
+This code is what zeros out the BSS section.  First it loads 0 into four consecutive registers.  Then it checks whether the address stored in r4 is less than the one in r9.  If it is, then it executes `stmia r4!, {r5-r8}`.  The `stm` instruction stores the second operand into the address contained in the first.  The `ia` suffix on the instruction means *increment after*, or increment the address in r4 to the address after the last address written by the instruction.  The `!` means store that address back in r4, as opposed to throwing it out.  The `{r5-r8}` operand means that `stm` should store the values in the consecutive registers r5,r6,r7,r8 (so 16 bytes) into r4.  So overall, the instruction stores 16 bytes of zeros into the address in r4, then increments that address by 16 bytes.  This loops until r4 is greater than or equal to r9, and the whole BSS section is zeroed out.
 
 <br>
 ```

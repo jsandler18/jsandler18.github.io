@@ -7,6 +7,9 @@ Before we can dive in to creating an operating system, first we have to set up o
 have mysterious errors that the tutorial does not mention, you are left stuck before you even begin.  Here I am going to describe the steps that I went through to get my
 dev environment set up.  I am, however, going to assume that you are working in a linux environment.
 
+This tutorial assumes that you have a working knowledge of the C programming language, as well as a basic understanding of the different parts of a computer (CPU, GPU, RAM,
+etc.).  It does not assume any prior knowledge about operating system design or concepts.  These will all be explained as we go.
+
 # The Compiler
 
 Most likely, your computer is running on an Intel or AMD processor that uses the x86_64 architecture.  The raspberry pi processor, however, uses the ARM architecture.

@@ -10,7 +10,7 @@ If you want to download the code and play with it yourself, [see my git repo](ht
 
 ## boot.S - The kernel entry point
 
-boot.S is going to be the first thing that the hardware executes in our kernel.  This must be done in assembly.  When the hardware loadsthe kernel, it does not set up a C
+boot.S is going to be the first thing that the hardware executes in our kernel.  This must be done in assembly.  When the hardware loads the kernel, it does not set up a C
 runtime environment.  It does not even know what the C runtime environment looks like!  This assembly code sets this up so that we can jump to C as soon as possible.
 Here is the code:
 
@@ -174,7 +174,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 For a line-by-line explanation of this code, [see this page](/explanations/kernel_c.html)
 
 ## linker.ld - Tying the pieces together
-For those unfamiliar with the C compilation process, there are, broadly speaking, three main steps.  The first is preproccessing, where all of your `#define` statements are expanded.  The second is compilation to object files, where the individual code files are converted to individual binaries called object files.  The third is linking, where these individual object files are tied together into a single executable.
+There are, broadly speaking, three main steps in the C compilation process.  The first is preproccessing, where all of your `#define` statements are expanded.  The second is compilation to object files, where the individual code files are converted to individual binaries called object files.  The third is linking, where these individual object files are tied together into a single executable.
 
 By default, GCC links your program as if it were user level code.  We need to override the default, because our kernel is not an ordinary user program.  We do this with a linker script.  Here is the linker script we will be using:
 
