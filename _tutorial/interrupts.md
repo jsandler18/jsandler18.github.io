@@ -219,7 +219,64 @@ __inline__ void ENABLE_INTERRUPTS(void) {
 `INTERRUPTS_ENABLED` loads the Current Program Status Register, or `CPSR` into a register.  It then checks bit 7.  If bit 7 is clear, then interrupts are enabled.  `ENABLE_INTERRUPTS` executes the `cps` (Change Processor State) instruction with the `ie` (Interrupts Enable).  The argument `i` means to enable IRQs as opposed to `f` for FIQs.  `DISABLE_INTERRUPTS` works exactly like `ENABLE_INTERRUPTS`, except the suffix is `id` (Interrupts Disable).
 
 ## The System Timer
+Interrupts are useless unless we have something to actually interrupt us!  The ultimate goal is to have the USB controller interrupt us, but the USB controller is hard to set up, so instead let's set up the [system timer peripheral](/extra/sys-time.html).
+
+We declare a C struct to map out the system timer peripheral:
+``` c
+typedef struct {
+    uint8_t timer0_matched: 1;
+    uint8_t timer1_matched: 1;
+    uint8_t timer2_matched: 1;
+    uint8_t timer3_matched: 1;
+    uint32_t reserved: 28;
+} timer_control_reg_t;
+
+typedef struct {
+    timer_control_reg_t control;
+    uint32_t counter_low;
+    uint32_t counter_high;
+    uint32_t timer0;
+    uint32_t timer1;
+    uint32_t timer2;
+    uint32_t timer3;
+} timer_registers_t;
+```
+
+Next we define an interrupt handler.  We don't need it to do anything advanced right now.  We just want it to be obvious that it works:
+``` c
+static timer_registers_t * timer_regs;
+
+static void timer_irq_handler(void) {
+    timer_regs->control.timer1_matched = 0; // Writing to this clears the pending bit in the irq
+    printf("timeout :)\n");
+}
+```
+All we do here is clear the interrupt pending flag and print something.
+
+All that is left is to register this function with the interrupt system:
+``` c
+void timer_init(void) {
+    timer_regs = (timer_registers_t *) SYSTEM_TIMER_BASE;
+    register_irq_handler(SYSTEM_TIMER_1, timer_irq_handler);
+}
+```
+
+Now in `kernel_main`, we can add:
+``` c
+...
+mem_init();
+interrupts_init();
+timer_init();
+timer_set(1000000); // 1 second
+puts("Hello, kernel World!\n");
+...
+```
+to see our timer interupt in action.
+
+Next, we are going to look at how to get the USB keyboard to work.
 
 **Previous**:
 [Part 5 - Printing to a Real Screen](/tutorial/hdmi.html)
 
+**Next**:
+[Part 7 - Typing on a Real Keyboard](/tutorial/keyboard.html)
