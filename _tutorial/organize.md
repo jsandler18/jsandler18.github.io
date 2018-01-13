@@ -3,8 +3,8 @@ layout: page
 title:  Part 3 - Organizing our Project
 ---
 
-This section is more of an exercise is C project organization than OS Dev.  If that doesn't interest you, you should skip ahead to [Part 4 - Dynamic
-Memory](/tutorial/dyn-mem.html)
+This section is more of an exercise is C project organization than OS Dev.  If that doesn't interest you, you should skip ahead to [Part 4 - Wrangling
+Memory](/tutorial/wrangling-mem.html)
 
 If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/700b97a63c5f77a1ced814fe70d8560cba3ffacc).
 
@@ -111,7 +111,8 @@ In `stdlib.c`, we define the functions `memcpy` and `bzero`, as these will come 
 
 In `stdio.c`, we define `getc`, `putc`, `gets` and `puts` as general purpose IO functions.  We do this even though `uart.c` had `uart_putc` and `uart_puts` because later we are going to want to swap out `uart_putc` for a function that renders text to an actuall screen, and it will be easier to replace one call to `uart_putc` here than many possible places.
 
-The implementation of these functions is not that important. If you really want to see them, [check the git repo](https://github.com/jsandler18/raspi-kernel/tree/700b97a63c5f77a1ced814fe70d8560cba3ffacc).
+The implementation of these functions is not that important. If you really want to see them, [check the git
+repo](https://github.com/jsandler18/raspi-kernel/tree/a40c043d7ec93fe904bc6bc83a25e08f36a37cfb).
 
 Now our directory structure looks like this:
 ```
@@ -135,10 +136,10 @@ L__ build/
     L__ linker.ld
 ```
 
-Now that our project is organized sensibly, lets look at a simple way to manage memory.
+Now that our project is organized sensibly, lets look at how to manage memory.
 
 **Previous**:
 [Part 2 - Getting Something to Boot](/tutorial/boot.html)
 
 **Next**:
-[Part 4 - Dynamic Memory](/tutorial/dyn-mem.html)
+[Part 4 - Wrangling Memory](/tutorial/dyn-mem.html)

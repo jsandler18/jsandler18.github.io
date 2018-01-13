@@ -1,11 +1,11 @@
 ---
 layout: page
-title:  Part 5 - Printing to a Real Screen
+title:  Part 6 - Printing to a Real Screen
 ---
 As of now, our kernel can do IO through its serial port.  On real hardware, we expect output to be printed on a real screen, usually through HDMI, not through some
 specialty serial connection.  In this part, we will loook at how to achieve this.
 
-If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/df09417ad6b1b0b6f849cc0575ab890921fa0634).
+If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/c63e51984345edf5f9297f66a29865b683e57008).
 
 ## Getting a Framebuffer
 If you are unfmilaiar with the concept framebuffers, I reccomend you read [Framebuffer, Pitch, and Depth](/extra/framebuffer.html) before continuing.
@@ -353,10 +353,10 @@ Here was what it should look like:
 
 To find out how to load your kernel on to real hardware, [see this page](/extra/hardware.html)
 
-The next obvious step is to get keyboard input, but before we can do that, we need to set up a system called interrupts.
+The next step is to get multiple processes running, but before we can do that, we need to set up a system called interrupts.
 
 **Previous**:
-[Part 4 - Dynamic Memory](/tutorial/dyn-mem.html)
+[Part 5 - Dynamic Memory](/tutorial/dyn-mem.html)
 
 **Next**:
-[Part 6 - Interrupts](/tutorial/interrupts.html)
+[Part 7 - Interrupts](/tutorial/interrupts.html)

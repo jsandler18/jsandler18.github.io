@@ -1,18 +1,15 @@
 ---
 layout: page
-title:  Part 4 - Dynamic Memory
+title:  Part 5 - Dynamic Memory Allocator
 ---
-Now that we can boot and have a sane project structure, we can move on with developing the kernel itself.  Since we are the kernel, theoretically, we can use any memory
-we want at any time.  To impose some order and prevent shooting ourselves in the foot, it makes sense to implement a simple memory allocator.  It is important to note
-that this allocator is not managing all of the memory.  It just manages a small piece that the kernel will use for its data structures.
+In the last part we organized all memory into pages.  Now we are going to reserve a small chunk of that memory so we can allocate with more precision than  4 KB.
 
-If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/9eeb138e06d287cb8f42bc71587a2f6aa61c6583).
+If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/cf8329869218a8f7a0278e495734010d2cb0a9b1).
 
 ## Allocating Memory
 In order to allocate memory, we need memory to allocate in the first place!  Since we are the
-kernel, we are the boss.  We can take whatever memory we want and use it for whatever we want (with the excption of the [peripheral address
-space](/extra/peripheral.html)).  I have decided to use the memory range 0x100000 - 0x200000.  This range starts at 1 MB and runs for 1 MB.  I chose this because it is
-large enough that it is well outside the range of the kernel code, and small enough that it does not use up a significant chunk of memory that user code might want.
+kernel, we are the boss.  We can take the memory directly after the page metadata and reserve that for our heap.  The amount to reserve is somewhat arbitrary, so I chose 1 MB because it is
+large enough that it should be sufficient for the kernel's dynamic memory needs, and small enough that it does not use up a significant chunk of memory that user code might want.
 
 Now that we have a large chunk of memory, all we need is a function to divide it up!  We want to expose the familiar interface `void * malloc(uint32_t bytes)` in the files `src/kernel/mem.c` and `include/kernel/mem.h` to do this.
 We are going to manage this by associating each allocation with a header.  The headers will form a linked list, so we can easily traverse from the beginning of one
@@ -22,8 +19,8 @@ allocation to the next.  It will also include a size, and whether the allocation
 typedef struct heap_segment{
     struct heap_segment * next;
     struct heap_segment * prev;
-    uint8_t is_allocated: 1;
-    uint32_t segment_size: 31;  // Includes this header
+    uint32_t is_allocated;
+    uint32_t segment_size;  // Includes this header
 } heap_segment_t;
 ```
 
@@ -36,9 +33,9 @@ void * kmalloc(uint32_t bytes) {
     heap_segment_t * curr, *best = NULL;
     int diff, best_diff = 0x7fffffff; // Max signed int
 
-    // Add the header to the number of bytes we need and make the size 4 byte aligned
+    // Add the header to the number of bytes we need and make the size 16 byte aligned
     bytes += sizeof(heap_segment_t);
-    bytes += bytes % 4 ? 4 - (bytes % 4) : 0;
+    bytes += bytes % 16 ? 16 - (bytes % 16) : 0;
 
     // Find the allocation that is closest in size to this request
     for (curr = heap_segment_list_head; curr != NULL; curr = curr->next) {
@@ -95,30 +92,48 @@ void kfree(void *ptr) {
 ```
 
 ## Initializing the Heap
-Now that we have the algorithms, we need to initialize it.  To do this, we must put a header before the beginning of our 1 MB allocation that says there is a 1 MB unused allocation there, and assign `heap_segment_list_head` to this header. Finally, we must call this initialization function in `kernel_main`. Here is the code:
+Now that we have the algorithms, we need to initialize it.  To do this, we must reserve the pages we are going to use, put a header at the beginning of our 1 MB allocation that says there is a 1 MB unused allocation there, and assign `heap_segment_list_head` to this header. Finally, we must call this initialization function in `kernel_main`. Here is the code:
 
 ``` c
 static heap_segment_t * heap_segment_list_head;
 
 void mem_init(void) {
-    // Set up malloc for use within the kernel
-    heap_init();
-    // TODO set up paging
+    ...
+    kernel_pages = ((uint32_t)&__end) / PAGE_SIZE;
+    for (i = 0; i < kernel_pages; i++) {
+        all_pages_array[i].vaddr_mapped = i * PAGE_SIZE;    // Identity map the kernel pages
+        all_pages_array[i].flags.allocated = 1;
+        all_pages_array[i].flags.kernel_page = 1;
+    }
+    // Reserve 1 MB for the kernel heap
+    for(; i < kernel_pages + (KERNEL_HEAP_SIZE / PAGE_SIZE); i++){
+        all_pages_array[i].vaddr_mapped = i * PAGE_SIZE;    // Identity map the kernel pages
+        all_pages_array[i].flags.allocated = 1;
+        all_pages_array[i].flags.kernel_heap_page = 1;
+    }
+    // Map the rest of the pages as unallocated, and add them to the free list
+    for(; i < num_pages; i++){
+        all_pages_array[i].flags.allocated = 0;
+        append_page_list(&free_pages, &all_pages_array[i]);
+    }
+
+
+    // Initialize the heap
+    page_array_end = (uint32_t)&__end + page_array_len;
+    heap_init(page_array_end)    
 }
 
-static void heap_init(void) {
-   heap_segment_list_head = (heap_segment_t *) KERNEL_HEAP_START;
-   bzero(heap_segment_list_head, sizeof(heap_segment_t));
-   heap_segment_list_head->segment_size = KERNEL_HEAP_SIZE;
+static void heap_init(uint32_t heap_start) {
+    heap_segment_list_head = (heap_segment_t *) heap_start;
+    bzero(heap_segment_list_head, sizeof(heap_segment_t));
+    heap_segment_list_head->segment_size = KERNEL_HEAP_SIZE;
 }
 ```
-
-The reason `heap_init` is inside this `mem_init` function is that later, `mem_init` will set up the rest of the memory.
 
 Next up, we are going to get our kernel to print to a real screen.
 
 **Previous**:
-[Part 3 - Organizing our Project](/tutorial/organize.html)
+[Part 4 - Wrangling Memory](/tutorial/wrangling-mem.html)
 
 **Next**:
-[Part 5 - Printing to a Real Screen](/tutorial/hdmi.html)
+[Part 6 - Printing to a Real Screen](/tutorial/hdmi.html)

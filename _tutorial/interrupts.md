@@ -1,12 +1,12 @@
 ---
 layout: page
-title:  Part 6 - Interrupts
+title:  Part 7 - Interrupts
 ---
-The next most usefule thing we could do is get input from a real USB keyboard.  In order to do this, we first must set up exceptions and interrupts.  If you are
+The next most useful thing we could do is run additional processes.  In order to do this, we first must set up exceptions and interrupts.  If you are
 unfamiliar with these concepts, see [this page](/extra/interrupts.html).
 
 If you want to download the code for this part and play with it for yourself, [see my git
-repo](https://github.com/jsandler18/raspi-kernel/tree/c7abe6f5ed05c9ed8c44e6a7f30982fdc3a47676)
+repo](https://github.com/jsandler18/raspi-kernel/tree/f11c7655b6c49166c98b9893825d6230c09e0bdc)
 
 ## Setting up the Exception Vector Table
 Before we can handle IRQs, we must set up exception handlers, and we must set up the [exception vector table](/extra/interrupts.html) to jump to those handlers.
@@ -273,10 +273,10 @@ puts("Hello, kernel World!\n");
 ```
 to see our timer interupt in action.
 
-Next, we are going to look at how to get the USB keyboard to work.
+Next, we are going to look at getting another process to run.
 
 **Previous**:
-[Part 5 - Printing to a Real Screen](/tutorial/hdmi.html)
+[Part 6 - Printing to a Real Screen](/tutorial/hdmi.html)
 
 **Next**:
-[Part 7 - Typing on a Real Keyboard](/tutorial/keyboard.html)
+[Part 8 - Processes](/tutoriaprocesss.html)
