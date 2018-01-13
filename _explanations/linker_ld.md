@@ -11,7 +11,7 @@ ENTRY(_start)
 SECTIONS
 {
     /* Starts at LOADER_ADDR. */
-    . = 08000;
+    . = 0x8000;
     __start = .;
     __text_start = .;
     .text :
@@ -71,7 +71,7 @@ This declares that the symbol `_start` from boot.S is the entry point to our cod
 
 <br>
 ```
-    . = 08000;
+    . = 0x8000;
     __start = .;
     __text_start = .;
     .text :

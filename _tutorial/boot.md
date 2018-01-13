@@ -6,7 +6,7 @@ title:  Part 2 - Getting Something to Boot
 As with any new project, the best way to get started is to copy a bunch of code from somewhere and get something working, then go back and try to understand the code.  I
 pulled this first batch of code from [the OSDev wiki](http://wiki.osdev.org/Raspberry_Pi_Bare_Bones), but I am going to post it here and explain each piece.
 
-If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/1eddfe2c6b42be11f5f01500a285b406c14e5c41).
+If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/93ad8e4880a35d9a04c7bc6a6d7a06fc08fdf959).
 
 ## boot.S - The kernel entry point
 
@@ -185,7 +185,7 @@ ENTRY(_start)
 SECTIONS
 {
     /* Starts at LOADER_ADDR. */
-    . = 08000;
+    . = 0x8000;
     __start = .;
     __text_start = .;
     .text :
