@@ -142,4 +142,4 @@ Now that our project is organized sensibly, lets look at how to manage memory.
 [Part 2 - Getting Something to Boot](/tutorial/boot.html)
 
 **Next**:
-[Part 4 - Wrangling Memory](/tutorial/dyn-mem.html)
+[Part 4 - Wrangling Memory](/tutorial/wrangling-mem.html)
