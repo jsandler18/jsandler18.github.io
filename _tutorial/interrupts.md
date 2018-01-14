@@ -50,18 +50,16 @@ void __attribute__ ((interrupt ("FIQ"))) fast_irq_handler(void) {
     while(1);
 }
 ```
+This is the quick and easy way to define exception handlers that we don't really care about yet.  Later we are going to remove those attributes and create a custom handler in assembly that will call these functions.
+
 Now that we have defined the handlers, we can set up the exception table.  This is done entirely in assembly to avoid gcc "optimizing" our access of memory address 0. Here is the code:
 
 **interrupt_vector.S**
 ```
 .section ".text"
 
-.equ KERNEL_HEAP_START, (0x100000) // Heap starts at 1 MB
-.equ KERNEL_HEAP_SIZE, (1024*1024) // Kernel heap is 1 MB large
-.equ KERNEL_STACK_SIZE, (1024 * 32)
-.equ KERNEL_STACK_START, (KERNEL_HEAP_START + KERNEL_HEAP_SIZE + KERNEL_STACK_SIZE)
-.equ IRQ_STACK_SIZE, (1024 * 32)
-.equ IRQ_STACK_START, (KERNEL_STACK_START + IRQ_STACK_SIZE)
+.equ KERNEL_STACK_SIZE, 4096
+.equ IRQ_STACK_SIZE, 4096
 
 .global move_exception_vector
 .global exception_vector
@@ -76,18 +74,17 @@ exception_vector:
     ldr pc, irq_handler_abs_addr
     ldr pc, fast_irq_handler_abs_addr
 
-reset_handler_abs_addr:                 .word (reset_handler + 0x8000)
-undefined_instruction_handler_abs_addr: .word (undefined_instruction_handler + 0x8000)
-software_interrupt_handler_abs_addr:    .word (software_interrupt_handler + 0x8000)
-prefetch_abort_handler_abs_addr:        .word (prefetch_abort_handler + 0x8000)
-data_abort_handler_abs_addr:            .word (data_abort_handler + 0x8000)
-irq_handler_abs_addr:                   .word (irq_handler + 0x8000)
-fast_irq_handler_abs_addr:              .word (fast_irq_handler + 0x8000)
+reset_handler_abs_addr:                 .word reset_handler
+undefined_instruction_handler_abs_addr: .word undefined_instruction_handler
+software_interrupt_handler_abs_addr:    .word software_interrupt_handler
+prefetch_abort_handler_abs_addr:        .word prefetch_abort_handler
+data_abort_handler_abs_addr:            .word data_abort_handler
+irq_handler_abs_addr:                   .word irq_handler
+fast_irq_handler_abs_addr:              .word fast_irq_handler
 
 move_exception_vector:
     push    {r4, r5, r6, r7, r8, r9}
     ldr     r0, =exception_vector 
-    add     r0, r0, #0x8000
     mov     r1, #0x0000
     ldmia   r0!,{r2, r3, r4, r5, r6, r7, r8, r9}
     stmia   r1!,{r2, r3, r4, r5, r6, r7, r8, r9}
@@ -95,7 +92,9 @@ move_exception_vector:
     stmia   r1!,{r2, r3, r4, r5, r6, r7, r8}
     mov     r0, #(0x12 | 0x80 | 0x40)   // Change to irq mode and set the irq stack pointer
     msr     cpsr_c, r0
-    mov     sp, #IRQ_STACK_START
+    mov     r4, #(KERNEL_STACK_SIZE + IRQ_STACK_SIZE)
+    ldr     sp, =__end
+    add     sp, sp, r4
     mov     r0, #(0x13 | 0x80 | 0x40)   // change back to supervisor mode
     msr     cpsr_c, r0
     pop     {r4, r5, r6, r7, r8, r9}
