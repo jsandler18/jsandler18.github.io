@@ -304,7 +304,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
     }
 }
 ```
-This is the main function for our kernel.  This is where control is transfered to from boot.S.  All it does is call the `init_uart` function, print "Hello, kerel World!",
+This is the main function for our kernel.  This is where control is transfered to from boot.S.  All it does is call the `init_uart` function, print "Hello, kernel World!",
 and print out any character you type.  This is where we will add calls to many other initialization functions.
 
 The arguments to this function look a bit weird.  Normally, the `main` function of C code looks something like `int main(int argc, char ** argv)`, but our `kernel_main` looks nothing like that.  In ARM, the convention is that the first three parameters of a function are passed through registers r0, r1 and r2.  When the bootloader loads our kernel, it also places some information about the hardware and the command line used to run the kernel in memory.  This information is called *atags*, and a pointer to the atags is placed in r2 just before boot.S runs.  So for our `kernel_main`, r0 and r1 are parameters to the function simply by convention, but we don't care about those.  r2 contains the atags pointer, so the third argument to `kernel_main` is the atags pointer.
