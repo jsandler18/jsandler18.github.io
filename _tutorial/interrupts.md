@@ -284,7 +284,7 @@ Next, we are going to look at getting another process to run.
 [Part 6 - Printing to a Real Screen](/tutorial/hdmi.html)
 
 **Next**:
-[Part 8 - Processes](/tutorial/processs.html)
+[Part 8 - Processes](/tutorial/process.html)
 
 \*\*\***To those following along using a VM**
 
