@@ -143,7 +143,7 @@ typedef struct {
 The code to pack an array of these tags into the proper format is just a straightforward implementation of the format described [here](/extra/prop-channel.html).  The `get_value_buffer_len` function simply hardcodes the various value buffer sizes for each defined tag.
 
 Here is the code:
-```
+```c
 static uint32_t get_value_buffer_len(property_message_tag_t * tag) {
     switch(tag->proptag) {
         case FB_ALLOCATE_BUFFER: 
