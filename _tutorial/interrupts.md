@@ -6,7 +6,7 @@ The next most useful thing we could do is run additional processes.  In order to
 unfamiliar with these concepts, see [this page](/extra/interrupts.html).
 
 If you want to download the code for this part and play with it for yourself, [see my git
-repo](https://github.com/jsandler18/raspi-kernel/tree/f11c7655b6c49166c98b9893825d6230c09e0bdc)
+repo](https://github.com/jsandler18/raspi-kernel/tree/cbab3ed75055e0c74bde36c5752e71575f10958d)
 
 ## Setting up the Exception Vector Table
 Before we can handle IRQs, we must set up exception handlers, and we must set up the [exception vector table](/extra/interrupts.html) to jump to those handlers.
@@ -14,13 +14,13 @@ Before we can handle IRQs, we must set up exception handlers, and we must set up
 Exception handlers are functions, but they cannot be normal functions, as exception handlers need more advanced prologue and epilogue code than a normal function.  Our
 compiler can handle this for us by using an attribute.  Here is what the IRQ handler signature looks like:
 ``` c
-void __attribute__ ((interrupt ("IRQ"))) irq_handler(void);
+void __attribute__ ((interrupt ("SWI"))) software_interrupt_handler(void);
 ```
-Where `"IRQ"` would be replaced with `"FIQ"` for the FIQ handler, `"SWI"` for the SWI handler, `"ABORT"` for the Reset, Data Abort, and Prefetch Abort handlers, and
+Where `"SWI"` would be replaced with `"IRQ"` for the interrupt handler, `"FIQ"` for the FIQ handler, `"ABORT"` for the Reset, Data Abort, and Prefetch Abort handlers, and
 `"UNDEF"` for the Undefined Instruction handler.  We want to have handlers defined for all exceptions, even if we don't really know what to do with them yet.  For now
 lets declare them in `src/kernel/interrupt.c` as dummy functions as follows:
 ``` c
-void __attribute__ ((interrupt ("IRQ"))) irq_handler(void) {
+void irq_handler(void) {
     printf("IRQ HANDLER\n");
     while(1);
 }
@@ -50,7 +50,7 @@ void __attribute__ ((interrupt ("FIQ"))) fast_irq_handler(void) {
     while(1);
 }
 ```
-This is the quick and easy way to define exception handlers that we don't really care about yet.  Later we are going to remove those attributes and create a custom handler in assembly that will call these functions.
+This is the quick and easy way to define exception handlers that we don't really care about yet.  We didn't include an attribute on the IRQ handler because we want to have a custom handler in assembly that will call irq_handler.
 
 Now that we have defined the handlers, we can set up the exception table.  This is done entirely in assembly to avoid gcc "optimizing" our access of memory address 0. Here is the code:
 
@@ -58,11 +58,7 @@ Now that we have defined the handlers, we can set up the exception table.  This 
 ```
 .section ".text"
 
-.equ KERNEL_STACK_SIZE, 4096
-.equ IRQ_STACK_SIZE, 4096
-
 .global move_exception_vector
-.global exception_vector
 
 exception_vector:
     ldr pc, reset_handler_abs_addr
@@ -79,26 +75,33 @@ undefined_instruction_handler_abs_addr: .word undefined_instruction_handler
 software_interrupt_handler_abs_addr:    .word software_interrupt_handler
 prefetch_abort_handler_abs_addr:        .word prefetch_abort_handler
 data_abort_handler_abs_addr:            .word data_abort_handler
-irq_handler_abs_addr:                   .word irq_handler
+irq_handler_abs_addr:                   .word irq_handler_asm_wrapper
 fast_irq_handler_abs_addr:              .word fast_irq_handler
 
 move_exception_vector:
     push    {r4, r5, r6, r7, r8, r9}
-    ldr     r0, =exception_vector 
+    ldr     r1, =exception_vector
     mov     r1, #0x0000
     ldmia   r0!,{r2, r3, r4, r5, r6, r7, r8, r9}
     stmia   r1!,{r2, r3, r4, r5, r6, r7, r8, r9}
     ldmia   r0!,{r2, r3, r4, r5, r6, r7, r8}
     stmia   r1!,{r2, r3, r4, r5, r6, r7, r8}
-    mov     r0, #(0x12 | 0x80 | 0x40)   // Change to irq mode and set the irq stack pointer
-    msr     cpsr_c, r0
-    mov     r4, #(KERNEL_STACK_SIZE + IRQ_STACK_SIZE)
-    ldr     sp, =__end
-    add     sp, sp, r4
-    mov     r0, #(0x13 | 0x80 | 0x40)   // change back to supervisor mode
-    msr     cpsr_c, r0
     pop     {r4, r5, r6, r7, r8, r9}
     blx     lr
+
+irq_handler_asm_wrapper:
+    sub     lr, lr, #4
+    srsdb   sp!, #0x13
+    cpsid   if, #0x13
+    push    {r0-r3, r12, lr}
+    and     r1, sp, #4
+    sub     sp, sp, r1
+    push    {r1}
+    bl      irq_handler
+    pop     {r1}
+    add     sp, sp, r1
+    pop     {r0-r3, r12, lr}
+    rfeia   sp!
 ```
 There is too much to explain about this code here, so it is explained in detail on [this page](/explanations/interrupt_vector_S.html)
 
@@ -122,29 +125,37 @@ For each possible IRQ, we are going to want to have a specialized handler functi
 ``` c
 typedef void (*interrupt_handler_f)(void);
 ```
-This is a pointer to a function which has no parameters and no return value.  We can then store an array of these function pointers in `interrupt.c`.  Since there are three 4 byte words representing interrupts, we will have one array for each word:
+This is a pointer to a function which has no parameters and no return value.  We can then store an array of these function pointers in `interrupt.c`.  Since there are three 4-byte words representing possible interrupts, but the last 3 bytes of the basic interrupts are repeats of others, there are 72 different interrupts that could be handled, so we declare an array of 72 handlers.
 ``` c
-static interrupt_handler_f gpu1_handlers[32];
-static interrupt_handler_f gpu2_handlers[32];
-static interrupt_handler_f basic_handlers[32];
+static interrupt_handler_f handlers[72];
 ```
+The Raspberry Pi documentation says that the interrupt pending flag cannot be cleared using the interrupt peripheral.  It must be cleared using whatever hardware peripheral that triggered the interrupt.  For this reason, we will also want users to register a specialized clearer function for that particular interrupt:
+``` c
+typedef void (*interrupt_clearer_f)(void);
+...
+static interrupt_clearer_f clearers[72];
+```
+
 To register a handler, we use the following code:
 ```c
-void register_irq_handler(irq_number_t irq_num, interrupt_handler_f handler) {
+void register_irq_handler(irq_number_t irq_num, interrupt_handler_f handler, interrupt_clearer_f clearer) {
     uint32_t irq_pos;
     if (IRQ_IS_BASIC(irq_num)) {
         irq_pos = irq_num - 64;
-        basic_handlers[irq_pos] = handler;
+        handlers[irq_num] = handler;
+        clearers[irq_num] = clearer;
         interrupt_regs->irq_basic_enable |= (1 << irq_pos);
     }
     else if (IRQ_IS_GPU2(irq_num)) {
         irq_pos = irq_num - 32;
-        gpu2_handlers[irq_pos] = handler;
+        handlers[irq_num] = handler;
+        clearers[irq_num] = clearer;
         interrupt_regs->irq_gpu_enable2 |= (1 << irq_pos);
     }
     else if (IRQ_IS_GPU1(irq_num)) {
         irq_pos = irq_num;
-        gpu1_handlers[irq_pos] = handler;
+        handlers[irq_num] = handler;
+        clearers[irq_num] = clearer;
         interrupt_regs->irq_gpu_enable1 |= (1 << irq_pos);
     }
 }
@@ -153,54 +164,44 @@ where `IRQ_IS_BASIC`, `IRQ_IS_GPU1`, and `IRQ_IS_GPU2` are macros that check whe
 
 In order to check which IRQs have been triggered and execute the handler, we must check the enabled bits of the IRQ peripheral, and execute the correct handler accordingly:
 ```c
-void __attribute__ ((interrupt ("IRQ"))) irq_handler(void) {
+void irq_handler(void) {
     int j;
-    for (j = 0; j < 7; j++) {
+    for (j = 0; j < NUM_IRQS; j++) {
         // If the interrupt is pending and there is a handler, run the handler
-        if (((1 << j) & interrupt_regs->irq_basic_pending) && (basic_handlers[j] != 0)) {
-            // the pending bit is cleared by the handler
-            basic_handlers[j]();
+        if (IRQ_IS_PENDING(interrupt_regs, j)  && (handlers[j] != 0)) {
+            clearers[j]();
+            ENABLE_INTERRUPTS();
+            handlers[j]();
+            DISABLE_INTERRUPTS();
+            return;
         }
-
-    }
-    for (j = 0; j < 32; j++) {
-        if (((1 << j) & interrupt_regs->irq_gpu_pending1) && (gpu1_handlers[j] != 0)) {
-            gpu1_handlers[j]();
-        }
-
-    }
-    for (j = 0; j < 32; j++) {
-        if (((1 << j) & interrupt_regs->irq_gpu_pending2) && (gpu2_handlers[j] != 0)) {
-            gpu2_handlers[j]();
-        }
-
     }
 }
 ```
-This code simply iterates over all irq pending flags.  If an interrupt is pending and there is a corresponding handler, then the handler will be called.
+This code simply iterates over all irq pending flags.  If an interrupt is pending and there is a corresponding handler, the clearer is called, then interrupts are enabled so to allow for "nesting" of interrupts, the handler is called and interrupts are disabled to finish off the interrupt.
 
 ## Initializing Interrupts
 We now have all the necessary infrastructure in place to have working interrupts.  All we need to do is intialize it.  Here is the code to do so:
 ``` c
 static interrupt_registers_t * interrupt_regs;
 
-static interrupt_handler_f gpu1_handlers[32];
-static interrupt_handler_f gpu2_handlers[32];
-static interrupt_handler_f basic_handlers[32];
+static interrupt_handler_f handlers[72];
+static interrupt_clearer_f clearers[72];
 
 extern void move_exception_vector(void);
 
 void interrupts_init(void) {
-    interrupt_regs = (interrupt_registers_t *)INTERRUPTS_PENDING;
-    bzero(gpu1_handlers, sizeof(interrupt_handler_f) * 32);
-    bzero(gpu2_handlers, sizeof(interrupt_handler_f) * 32);
-    bzero(basic_handlers, sizeof(interrupt_handler_f) * 32);
-    interrupt_regs->irq_basic_disable = 0xffffffff; // disable all basic interrupts
+   interrupt_regs = (interrupt_registers_t *)INTERRUPTS_PENDING;
+    bzero(handlers, sizeof(interrupt_handler_f) * NUM_IRQS);
+    bzero(clearers, sizeof(interrupt_clearer_f) * NUM_IRQS);
+    interrupt_regs->irq_basic_disable = 0xffffffff; // disable all interrupts
+    interrupt_regs->irq_gpu_disable1 = 0xffffffff;
+    interrupt_regs->irq_gpu_disable2 = 0xffffffff;
     move_exception_vector();
     ENABLE_INTERRUPTS();
 }
 ```
-This first initializes the interrupt register struct.  Then it zeros out all handlers.  Then it disables all ARM Specific interrupts, as we don't need any of those right now.  We don't disable any GPU interrupts as those are poorly documented and I don't want to disable anything important for the GPU.  Then we call `move_exception_vector` which is defined in `interrupt_vector.S` to copy the exception vector table to address 0.  Finally we enable interrups.
+This first initializes the interrupt register struct.  Then it zeros out all handlers.  Then it disables all interrupts, as we want to enable them as they are registered. Then we call `move_exception_vector` which is defined in `interrupt_vector.S` to copy the exception vector table to address 0.  Finally we enable interrups.
 
 `ENABLE_INTERRUPTS` and `DISABLE_INTERRUPTS` (not called here) are inline functions that will be called frequently as we write more functionality. Here is the code:
 ``` c
@@ -218,7 +219,8 @@ __inline__ void ENABLE_INTERRUPTS(void) {
 `INTERRUPTS_ENABLED` loads the Current Program Status Register, or `CPSR` into a register.  It then checks bit 7.  If bit 7 is clear, then interrupts are enabled.  `ENABLE_INTERRUPTS` executes the `cps` (Change Processor State) instruction with the `ie` (Interrupts Enable).  The argument `i` means to enable IRQs as opposed to `f` for FIQs.  `DISABLE_INTERRUPTS` works exactly like `ENABLE_INTERRUPTS`, except the suffix is `id` (Interrupts Disable).
 
 ## The System Timer
-Interrupts are useless unless we have something to actually interrupt us!  The ultimate goal is to have the USB controller interrupt us, but the USB controller is hard to set up, so instead let's set up the [system timer peripheral](/extra/sys-time.html).
+
+Interrupts are useless unless we have something to actually interrupt us!  We are going to set up the [system timer peripheral](/extra/sys-time.html), as this will be useful in setting up processes.
 
 We declare a C struct to map out the system timer peripheral:
 ``` c
@@ -241,22 +243,26 @@ typedef struct {
 } timer_registers_t;
 ```
 
-Next we define an interrupt handler.  We don't need it to do anything advanced right now.  We just want it to be obvious that it works:
+Next we define an interrupt handler and a clearer.  We don't need it to do anything advanced right now.  We just want it to be obvious that it works:
 ``` c
 static timer_registers_t * timer_regs;
 
 static void timer_irq_handler(void) {
-    timer_regs->control.timer1_matched = 0; // Writing to this clears the pending bit in the irq
     printf("timeout :)\n");
+    timer_set(3000000);
+}
+
+static void timer_irq_clearer(void) {
+    timer_regs->control.timer1_matched = 1;
 }
 ```
-All we do here is clear the interrupt pending flag and print something.
+All we do here is print something and reset the timer.
 
 All that is left is to register this function with the interrupt system:
 ``` c
 void timer_init(void) {
     timer_regs = (timer_registers_t *) SYSTEM_TIMER_BASE;
-    register_irq_handler(SYSTEM_TIMER_1, timer_irq_handler);
+    register_irq_handler(SYSTEM_TIMER_1, timer_irq_handler, timer_irq_clearer);
 }
 ```
 
@@ -278,4 +284,8 @@ Next, we are going to look at getting another process to run.
 [Part 6 - Printing to a Real Screen](/tutorial/hdmi.html)
 
 **Next**:
-[Part 8 - Processes](/tutoriaprocesss.html)
+[Part 8 - Processes](/tutorial/processs.html)
+
+\*\*\***To those following along using a VM**
+
+At the time of writing this, QEMU's implementation of the Raspberry Pi Model 2 does not have the system timer implemented.  Therefore, this part and any subsequent part that relies on it will not work on the VM.

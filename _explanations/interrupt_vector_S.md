@@ -7,11 +7,7 @@ Recall the source code for interrupt_vector.S:
 ```
 .section ".text"
 
-.equ KERNEL_STACK_SIZE, 4096
-.equ IRQ_STACK_SIZE, 4096
-
 .global move_exception_vector
-.global exception_vector
 
 exception_vector:
     ldr pc, reset_handler_abs_addr
@@ -28,37 +24,34 @@ undefined_instruction_handler_abs_addr: .word undefined_instruction_handler
 software_interrupt_handler_abs_addr:    .word software_interrupt_handler
 prefetch_abort_handler_abs_addr:        .word prefetch_abort_handler
 data_abort_handler_abs_addr:            .word data_abort_handler
-irq_handler_abs_addr:                   .word irq_handler
+irq_handler_abs_addr:                   .word irq_handler_asm_wrapper
 fast_irq_handler_abs_addr:              .word fast_irq_handler
 
 move_exception_vector:
     push    {r4, r5, r6, r7, r8, r9}
-    ldr     r0, =exception_vector 
+    ldr     r1, =exception_vector
     mov     r1, #0x0000
     ldmia   r0!,{r2, r3, r4, r5, r6, r7, r8, r9}
     stmia   r1!,{r2, r3, r4, r5, r6, r7, r8, r9}
     ldmia   r0!,{r2, r3, r4, r5, r6, r7, r8}
     stmia   r1!,{r2, r3, r4, r5, r6, r7, r8}
-    mov     r0, #(0x12 | 0x80 | 0x40)   // Change to irq mode and set the irq stack pointer
-    msr     cpsr_c, r0
-    mov     r4, #(KERNEL_STACK_SIZE + IRQ_STACK_SIZE)
-    ldr     sp, =__end
-    add     sp, sp, r4
-    mov     r0, #(0x13 | 0x80 | 0x40)   // change back to supervisor mode
-    msr     cpsr_c, r0
     pop     {r4, r5, r6, r7, r8, r9}
     blx     lr
-```
 
-## Defining New Stacks
-There are a couple constants defined at the top of the file:
+irq_handler_asm_wrapper:
+    sub     lr, lr, #4
+    srsdb   sp!, #0x13
+    cpsid   if, #0x13
+    push    {r0-r3, r12, lr}
+    and     r1, sp, #4
+    sub     sp, sp, r1
+    push    {r1}
+    bl      irq_handler
+    pop     {r1}
+    add     sp, sp, r1
+    pop     {r0-r3, r12, lr}
+    rfeia   sp!
 ```
-.equ KERNEL_STACK_SIZE, 4096
-.equ IRQ_STACK_SIZE, 4096
-```
-When we first got the [kernel to boot](/tutorial/boot.html), we said that the kernel stack should start at 0x8000 and grow down.  Now we are going to change that so that it starts 32 KB above the end of the kernel image and grows towards it.  These constants are also defined in boot.S, and the original instruction to set the stack pointer is changed to use this new address.  In order to accomidate the stack, we move the page metadata that used to start after the kernel image to start after the stack.  We make this change so that we may easily declare a seconds stack on top of this one.
-
-The second stack that starts 32 KB above the start of the kernel stack.  Why do we need a second stack? Each exception has its own processor mode, and each mode has its own private stack pointer.  When an exception occurs, the program switches to use the exception's stack pointer.  We need to set up a stack in order for this allocation to make any sense.
 
 ## Writing the Exception Vector Table
 Our strategy for this is to write out each branch instruction by hand and copy the instructions from the .text section to address 0 at runtime.
@@ -103,17 +96,58 @@ r1 is the destination address.
 ```
 This repeats the above, but this copies the absolute addresses to sit above the exception instructions.
 ```
-    mov     r0, #(0x12 | 0x80 | 0x40)   // Change to irq mode and set the irq stack pointer
-    msr     cpsr_c, r0
-    mov     r4, #(KERNEL_STACK_SIZE + IRQ_STACK_SIZE)
-    ldr     sp, =__end
-    add     sp, sp, r4
-    mov     r0, #(0x13 | 0x80 | 0x40)   // change back to supervisor mode
-    msr     cpsr_c, r0
-```
-These instructions switches to the processor mode that the CPU will be in when an IRQ exception occurs.  It then loads the stack pointer up with the end of the kernel image plus the stack size, so the stack starts at the top of this reserved block of memory and grows down. Then it switches back to supervisor mode, which is what we started in.
-```
     pop     {r4, r5, r6, r7, r8, r9}
     blx     lr
 ```
 This restores the saved registers and returns to the caller.
+
+## A Custom Handler Wrapper
+Exceptions cannot just jump to normal functions.  There are certain things that must be taken care of before and after the normal function is executed.  By using the `__attribute__((interrupt("FIQ")))`, we can embed a default version of this special prologue and epilogue directly in the function.  However, it is very minimal, and for our IRQ handler, we need a bit of customization.  Let's break down the code:
+
+```
+    sub     lr, lr, #4
+```
+Due to a quirk with how arm does exceptions, we have to adjust the return address to be one instruction back.
+
+```
+    srsdb   sp!, #0x13
+```
+When an IRQ exception occurs, the processor switches from whatever mode it was in to IRQ mode.  IRQ mode has its own stack and its own versions of a few registers, including `sp` and `cpsr`, that are separate from the normal registers.  It will make life easier in the long run if we change from IRQ mode back to supervisor mode, which is what we started with.
+
+This instruction stores `lr`(the return address), and `spsr` (the general `cpsr` register that is shadowed by the IRQ mode's own version) to the stack of mode 0x13 (supervisor mode), and then uses that mode's stack pointer.
+
+```
+    cpsid   if, #0x13
+```
+This instruction switches to supervisor mode with interrupts disabled.
+
+```
+    push    {r0-r3, r12, lr}
+```
+This saves all of the caller-save registers.  Any function we call will save the registers `r4-r11` for us and restore them for us, so we don't notice the difference.  We have to save `r0-r3`, `r12`, and `lr`.  Normal functions usually just accept that these registers are clobbered and may not save them.  Since we are interrupting some other code that did not consent to calling a function, we must preserve all of the registers so it does not notice something happened when control is returned to it.
+
+```
+    and     r1, sp, #4
+    sub     sp, sp, r1
+```
+According to the ARM documentation, the stack must be 8 byte aligned when calling functions, though the exception handler may leave us with a stack that is not 8 byte aligned.  This corrects that.
+
+```
+    bl      irq_handler
+```
+This calls our c code handler
+
+```
+    add     sp, sp, r1
+```
+This restores the stack alignment
+
+```
+    pop     {r0-r3, r12, lr}
+```
+This restores the caller-save registers
+
+```
+    rfeia   sp!
+```
+This restores the stored `cpsr` and returns to the address in the stored `lr`
