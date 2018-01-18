@@ -3,7 +3,7 @@ layout: page
 title:  Part 3 - Organizing our Project
 ---
 
-This section is more of an exercise is C project organization than OS Dev.  If that doesn't interest you, you should skip ahead to [Part 4 - Wrangling
+This section is more of an exercise in C project organization than OS Dev.  If that doesn't interest you, you should skip ahead to [Part 4 - Wrangling
 Memory](/tutorial/wrangling-mem.html)
 
 If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/700b97a63c5f77a1ced814fe70d8560cba3ffacc).
