@@ -3,7 +3,7 @@ layout: page
 title:  Part 3 - Organizing our Project
 ---
 
-This section is more of an exercise is C project organization than OS Dev.  If that doesn't interest you, you should skip ahead to [Part 4 - Wrangling
+This section is more of an exercise in C project organization than OS Dev.  If that doesn't interest you, you should skip ahead to [Part 4 - Wrangling
 Memory](/tutorial/wrangling-mem.html)
 
 If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/700b97a63c5f77a1ced814fe70d8560cba3ffacc).
@@ -14,7 +14,7 @@ Right now, we have our C files, our linker file, our compiled objects, and our c
 start making the kernel more complex, it would be a good idea to separate different kinds of files.
 
 The way that we are going to do it is to separate C files, header files, and compilation files into separate directories: `src`, `include`, and `build` respectively.
-`src` and `include` are going to be structured very similarly, so when I talk about one, assmue it holds for the other unless otherwise stated.
+`src` and `include` are going to be structured very similarly, so when I talk about one, assume it holds for the other unless otherwise stated.
 
 `src` and `include` are going to have subdirectories `kernel` and `common`, where `kernel` is for files that are exclusive to the kernel, and `common` is for files that
 contain standard functionality that may not be exclusive to the kernel, such as `memcpy`
