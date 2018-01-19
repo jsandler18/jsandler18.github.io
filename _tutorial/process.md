@@ -216,4 +216,4 @@ Now that we have real concurrency, we also can have data races! In order to help
 [Part 7 - Interrupts](/tutorial/interrupts.html)
 
 **Next:**
-[Part 9 - Locks](/tutorial/locks.hmtl)
+[Part 9 - Locks](/tutorial/locks.html)
