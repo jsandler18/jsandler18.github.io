@@ -48,6 +48,17 @@ halt:
 
 For a line-by-line explanation of this code, [see this page](/explanations/boot_S.html)
 
+If you are developing for the VM, the model 2, or the model 3, you should also add these lines to the top of `_start`:
+
+```
+mrc p15, #0, r1, c0, c0, #5
+and r1, r1, #3
+cmp r1, #2
+bne halt
+```
+
+These lines will send three out of the four cores to `halt`, effectively shutting them down.  Writing an OS is hard, writing a mult-core OS is even harder.
+
 
 ## kernel.c - The C code
 
@@ -72,7 +83,7 @@ static inline void mmio_write(uint32_t reg, uint32_t data)
 static inline uint32_t mmio_read(uint32_t reg)
 {
     return *(volatile uint32_t*)reg;
-#}
+}
 
 // Loop <delay> times in a way that the compiler won't optimize away
 static inline void delay(int32_t count)

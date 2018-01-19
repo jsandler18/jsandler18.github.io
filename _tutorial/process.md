@@ -8,7 +8,7 @@ stop a process from executing, save its state, start another process, and restor
 To play around with the code for yourself, [see my git repo.](https://github.com/jsandler18/raspi-kernel/tree/8886bb62731cf8bf9e5f3b01e0bd52bdcfb9e15f)
 
 ## The Process Control Block
-The Process Control Block (or PCB) is the data structure that holds all information about a proccess when it is not running so that it may be restored.  This is what stores the
+The Process Control Block (or PCB) is the data structure that holds all information about a process when it is not running so that it may be restored.  This is what stores the
 PID and the name of the process, and any other metadata you could want.  More importantly, each process is going to need its own stack, and its going to need its own
 stack pointer.  These are the keys to saving and restoring the state of a process.  Saving the state is as simple as pushing all of the registers onto the stack.
 Restoring the state is just popping the registers off of the stack.  Here is the definition of the PCB:
@@ -216,4 +216,4 @@ Now that we have real concurrency, we also can have data races! In order to help
 [Part 7 - Interrupts](/tutorial/interrupts.html)
 
 **Next:**
-[Part 8 - Locks](/tutorial/locks.hmtl)
+[Part 9 - Locks](/tutorial/locks.hmtl)

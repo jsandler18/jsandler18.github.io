@@ -8,7 +8,7 @@ specialty serial connection.  In this part, we will loook at how to achieve this
 If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/c63e51984345edf5f9297f66a29865b683e57008).
 
 ## Getting a Framebuffer
-If you are unfmilaiar with the concept framebuffers, I reccomend you read [Framebuffer, Pitch, and Depth](/extra/framebuffer.html) before continuing.
+If you are unfamiliar with the concept framebuffers, I reccomend you read [Framebuffer, Pitch, and Depth](/extra/framebuffer.html) before continuing.
 
 In order to draw anything to the screen, we need to get a framebuffer.  We can only get one by asking the GPU very nicely.  This process differs between the Raspberry Pi
 Model 1 and Model 2.  Since I am developing for a Model 2 VM and Model 1 hardware, I will walk through both.

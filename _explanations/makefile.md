@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 3 - Organizing our Project
+title:  An in-depth Explanation - Makefile
 ---
 
 ## Makefile source

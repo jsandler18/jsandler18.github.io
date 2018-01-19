@@ -51,6 +51,11 @@ uint32_t get_mem_size(atag_t * tag) {
 
 }
 ```
+
+If you are developing for the VM, this will not work.  The VM does not emulate the bootloader which sets up the atags.  Since you determine the exact size of memory
+through QEMU options, you should just have this function return that amount of memory.  My Makefile sets the memory to be 128 MB, so this function should return `1024 *
+1024 * 128`.
+
 ## Wrangling Memory
 Now that we can get the total size of memory, we can divide that memory up into pages.  The number of pages is simply the memory size divided by the page size.  
 
