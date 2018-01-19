@@ -18,7 +18,7 @@ x86_64 that compiles for ARM.  The compiler we want is called `gcc-arm-none-eabi
 
 If you are on linux, create a new directory for this project, and copy the downloaded file there. Then extract the the file using this command:
 ```
-tar -xf tar -xf gcc-arm-none-eabi-X-XXXX-XX-update-linux.tar.bz2
+tar -xf gcc-arm-none-eabi-X-XXXX-XX-update-linux.tar.bz2
 ```
 where the Xs may vary depending on when you download the file. The compiler should be located in `gcc-arm-none-eabi-X-XXXX-XX-update/bin/arm-none-eabi-gcc`
 
