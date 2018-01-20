@@ -53,7 +53,7 @@ If you are developing for the VM, the model 2, or the model 3, you should also a
 ```
 mrc p15, #0, r1, c0, c0, #5
 and r1, r1, #3
-cmp r1, #2
+cmp r1, #0
 bne halt
 ```
 
