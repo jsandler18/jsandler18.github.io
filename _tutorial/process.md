@@ -5,7 +5,8 @@ title:  Part 8 - Processes
 One of the most important responsibilities of the kernel is to provide an interface to start processes, and to switch between processes seemlessly.  We need to be able to
 stop a process from executing, save its state, start another process, and restore the first process later without it ever realizing it was not executing.
 
-To play around with the code for yourself, [see my git repo.](https://github.com/jsandler18/raspi-kernel/tree/8886bb62731cf8bf9e5f3b01e0bd52bdcfb9e15f)
+To play around with the code for yourself, [see my git
+repo.](https://github.com/jsandler18/raspi-kernel/tree/f123134465b1bc023cda80f81266b318919b23d1)
 
 ## The Process Control Block
 The Process Control Block (or PCB) is the data structure that holds all information about a process when it is not running so that it may be restored.  This is what stores the
@@ -133,7 +134,7 @@ Since we passed in two PCBs, both of which have the saved stack pointer as its f
 
 Before we completely restore the new thread, we reset the timer so that it will go off again in another quantum.  Then we pop off all of the general purpose registers and restore the current program state register.
 
-The last thing we must do is resume execution of the new process.  We do this by loading the saved `lr` into the `pc` register, so execution will resume.  It might seem wierd that this code stores the saved `sp` into `lr`.  Since `lr` is caller-save, an existing process will just overwrite whatever we put there when it is time to return from the exception.  A new process, however, jumps straight into the code without returning from an exception, as technically the new process never had an exception.  The new process does not have anywhere to return to, so when it exits, it will use this `lr` to return.  For now, all our threads will be infinite loops, so this is not a problem.  Later, we will use this to jump to process cleanup code.
+The last thing we must do is resume execution of the new process.  We do this by loading the saved `lr` into the `pc` register, so execution will resume.  It might seem wierd that this code stores the saved `sp` into `lr`.  Since `lr` is caller-save, an existing process will just overwrite whatever we put there when it is time to return from the exception.  A new process, however, jumps straight into the code without returning from an exception, as technically the new process never had an exception.  The new process does not have anywhere to return to, so when it exits, it will use this `lr` to return.  We can take advantage of this to have a process automatically jump to cleanup code when it dies.
 
 ## Creating a new Process
 Now that we can switch between processes, we need processes to switch between.
@@ -159,6 +160,7 @@ void create_kernel_thread(kthread_function_f thread_func, char * name, int name_
     // Set up the stack that will be restored during a context switch
     bzero(new_proc_state, sizeof(proc_saved_state_t));
     new_proc_state->lr = (uint32_t)thread_func;     // lr is used as return address in switch_to_thread
+    new_proc_state->sp = (uint32_t)reap;            // When the thread function returns, this reaper routine will clean it up
     new_proc_state->cpsr = 0x13 | (8 << 1);         // Sets the thread up to run in supervisor mode with irqs only
 
     // add the thread to the lists
@@ -173,15 +175,40 @@ The tricky part of the code is in these lines:
     pcb->saved_state = new_proc_state;
 ...
     new_proc_state->lr = (uint32_t)thread_func;
+    new_proc_state->sp = (uint32_t)reap;            // When the thread function returns, this reaper routine will clean it up
     new_proc_state->cpsr = 0x13 | (8 << 1);
 ```
 These set up the new process's stack so that `switch_to_thread` will work on it, even though it was never executing before.
 
 The first two lines essentially sets the stack pointer.  Remember that the stack grows down to lower addresses, so the stack starts at the top of the page: `pcb->stack_page + PAGE_SIZE`.  Subtracting `sizeof(proc_saved_state_t)` "pushes" an empty saved state on to the stack
 
-The next lines fill in some vital information. The first sets where the context switch should jump to once everything is restored.  We want this to be the address of the function for this process.  The second line sets up what the current program state register will contain.  Since we are dealing with kernel threads, we want to stay in supervisor mode (mode 0x13), and we want IRQs to be enabled when this process starts (bit 7 = 0).  We set bit 8 to disable a kind of exception that we are not using.
+The next lines fill in some vital information. The first sets where the context switch should jump to once everything is restored.  We want this to be the address of the function for this process.  The second line sets this process to jump to cleanup code when it finishes.  The third line sets up what the current program state register will contain.  Since we are dealing with kernel threads, we want to stay in supervisor mode (mode 0x13), and we want IRQs to be enabled when this process starts (bit 7 = 0).  We set bit 8 to disable a kind of exception that we are not using.
 
-In theory, we could pass arguments to this function by placing values in `r0-r3`, and we can specify a process cleanup routine by putting its address in `new_proc_state->sp`, but again, we do not need this functionality right now so I will save it for another time.
+In theory, we could pass arguments to this function by placing values in `r0-r3`, but we do not need this functionality right now so I will save it for another time.
+
+This `reap` function contains cleanup code.  All it does is free all resources associated with a process, and then context switches immediately:
+``` c
+static void reap(void) {
+    DISABLE_INTERRUPTS();
+    process_control_block_t * new_thread, * old_thread;
+
+    // If nothing on the run queue, there is nothing to do now. just loop
+    while (size_pcb_list(&run_queue) == 0);
+
+    // Get the next thread to run.  For now we are using round-robin
+    new_thread = pop_pcb_list(&run_queue);
+    old_thread = current_process;
+    current_process = new_thread;
+
+    // Free the resources used by the old process.  Technically, we are using dangling pointers here, but since interrupts are disabled and we only have one core, it
+    // should still be fine
+    free_page(old_thread->stack_page);
+    kfree(old_thread);
+
+    // Context Switch
+    switch_to_thread(old_thread, new_thread);
+}
+```
 
 ## Testing the System
 In `kernel.c`, add a call to `process_init`.  Then above `kernel_main`, create the following function:
