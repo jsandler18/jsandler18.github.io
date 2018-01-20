@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 4 - Wrangling Memory
+title:  Part 04 - Wrangling Memory
 ---
 Now that we can boot and have a sane project structure, we can move on with developing the kernel itself.  Since we are the kernel, theoretically, we can use any memory
 we want at any time.  To impose some order and prevent shooting ourselves in the foot, we need to wrangle all of that memory into a sane system.

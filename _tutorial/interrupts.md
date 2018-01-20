@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 7 - Interrupts
+title:  Part 07 - Interrupts
 ---
 The next most useful thing we could do is run additional processes.  In order to do this, we first must set up exceptions and interrupts.  If you are
 unfamiliar with these concepts, see [this page](/extra/interrupts.html).

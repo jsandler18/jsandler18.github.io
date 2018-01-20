@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 2 - Getting Something to Boot
+title:  Part 02 - Getting Something to Boot
 ---
 
 As with any new project, the best way to get started is to copy a bunch of code from somewhere and get something working, then go back and try to understand the code.  I

@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 8 - Processes
+title:  Part 08 - Processes
 ---
 One of the most important responsibilities of the kernel is to provide an interface to start processes, and to switch between processes seemlessly.  We need to be able to
 stop a process from executing, save its state, start another process, and restore the first process later without it ever realizing it was not executing.

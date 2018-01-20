@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 9 - Locks
+title:  Part 09 - Locks
 ---
 
 Since our kernel now has concurrency, we are going to need to provide facilities to prevent data races.  There are many ways to do synchronization.  I will focus on two:

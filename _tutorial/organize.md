@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 3 - Organizing our Project
+title:  Part 03 - Organizing our Project
 ---
 
 This section is more of an exercise in C project organization than OS Dev.  If that doesn't interest you, you should skip ahead to [Part 4 - Wrangling

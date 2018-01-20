@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 5 - Dynamic Memory Allocator
+title:  Part 05 - Dynamic Memory Allocator
 ---
 In the last part we organized all memory into pages.  Now we are going to reserve a small chunk of that memory so we can allocate with more precision than  4 KB.
 

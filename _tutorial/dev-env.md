@@ -1,6 +1,6 @@
 ---
 layout: page
-title:  Part 1 - Setting up the Development Environment
+title:  Part 01 - Setting up the Development Environment
 ---
 
 Before we can dive in to creating an operating system, first we have to set up our development environment.  For many tutorials, this can be difficult, as often you will
