@@ -53,7 +53,6 @@ halt:
 
 For a line-by-line explanation of this code, [see this page](/explanations/boot_S.html)
 
-
 ## kernel.c - The C code
 
 This file contains the meat of our baby kernel.

@@ -11,3 +11,5 @@ If you find something confusing, or you have questions or suggestions about this
 page](https://github.com/jsandler18/jsandler18.github.io/issues).
 
 If you see a problem with the kernel itself, submit an issue to [the kernel's issue page](https://github.com/jsandler18/raspi-kernel/issues)
+
+If you want to have a discussion, [go to the gitter for this repo](https://gitter.im/raspi-kernel/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
