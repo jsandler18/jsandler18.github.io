@@ -6,7 +6,7 @@ title:  Part 02 - Getting Something to Boot
 As with any new project, the best way to get started is to copy a bunch of code from somewhere and get something working, then go back and try to understand the code.  I
 pulled this first batch of code from [the OSDev wiki](http://wiki.osdev.org/Raspberry_Pi_Bare_Bones), but I am going to post it here and explain each piece.
 
-If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/93ad8e4880a35d9a04c7bc6a6d7a06fc08fdf959).
+If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/9208b9b20134909b107cb344c90f57c2c72c377d).
 
 ## boot.S - The kernel entry point
 
@@ -21,6 +21,11 @@ Here is the code:
 .global _start
 
 _start:
+    mrc p15, #0, r1, c0, c0, #5
+    and r1, r1, #3
+    cmp r1, #0
+    bne halt
+
     mov sp, #0x8000
 
     ldr r4, =__bss_start
@@ -47,17 +52,6 @@ halt:
 ```
 
 For a line-by-line explanation of this code, [see this page](/explanations/boot_S.html)
-
-If you are developing for the VM, the model 2, or the model 3, you should also add these lines to the top of `_start`:
-
-```
-mrc p15, #0, r1, c0, c0, #5
-and r1, r1, #3
-cmp r1, #2
-bne halt
-```
-
-These lines will send three out of the four cores to `halt`, effectively shutting them down.  Writing an OS is hard, writing a mult-core OS is even harder.
 
 
 ## kernel.c - The C code

@@ -7,7 +7,7 @@ we want at any time.  To impose some order and prevent shooting ourselves in the
 The best way to do this is to split memory into 4 KB blocks called *pages*.  Pages allow us to allocate blocks of memory that are not insignificantly small, but also not
 so large that they take up a significant fraction of memory.
 
-If you want to download the code and play with it yourself, [see my github](https://github.com/jsandler18/raspi-kernel/tree/4d6cf030dbd3141317f04480704aeb7a73a6f592)
+If you want to download the code and play with it yourself, [see my github](https://github.com/jsandler18/raspi-kernel/tree/62f68bf494eefd372b28ef1ce54841e310f82295)
 
 ## Getting the Size of Memory
 If we want to organize all of memory, we need to know how much memory we actually have availible.  We can do this by accessing the [atags](/extra/atags.html).

@@ -6,7 +6,7 @@ title:  Part 09 - Locks
 Since our kernel now has concurrency, we are going to need to provide facilities to prevent data races.  There are many ways to do synchronization.  I will focus on two:
 spin locks and mutexes.
 
-If you want to play with the code for yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/0b93bb87ba743d1d8c60205131ca83b992c4a0e9).
+If you want to play with the code for yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/93d44a737728aa5fe366ad8ca62563e78987b023).
 
 ## The Atomic Swap
 Both spin locks and mutexes rely on a "lock variable", a variable that is 1 when the lock is free, and 0 when taken.  The most important part of a lock implementation is

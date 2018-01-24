@@ -5,7 +5,7 @@ title:  Part 06 - Printing to a Real Screen
 As of now, our kernel can do IO through its serial port.  On real hardware, we expect output to be printed on a real screen, usually through HDMI, not through some
 specialty serial connection.  In this part, we will loook at how to achieve this.
 
-If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/c63e51984345edf5f9297f66a29865b683e57008).
+If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/7228754baab88459ef0290893c7329a62eccfb90).
 
 ## Getting a Framebuffer
 If you are unfamiliar with the concept framebuffers, I reccomend you read [Framebuffer, Pitch, and Depth](/extra/framebuffer.html) before continuing.

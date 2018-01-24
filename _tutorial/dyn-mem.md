@@ -4,7 +4,7 @@ title:  Part 05 - Dynamic Memory Allocator
 ---
 In the last part we organized all memory into pages.  Now we are going to reserve a small chunk of that memory so we can allocate with more precision than  4 KB.
 
-If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/cf8329869218a8f7a0278e495734010d2cb0a9b1).
+If you want to download the code and play with it yourself, [see my git repo](https://github.com/jsandler18/raspi-kernel/tree/bd5026277370360fb04f04f5b050c6853466c86d).
 
 ## Allocating Memory
 In order to allocate memory, we need memory to allocate in the first place!  Since we are the

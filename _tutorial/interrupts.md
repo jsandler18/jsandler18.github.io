@@ -6,7 +6,7 @@ The next most useful thing we could do is run additional processes.  In order to
 unfamiliar with these concepts, see [this page](/extra/interrupts.html).
 
 If you want to download the code for this part and play with it for yourself, [see my git
-repo](https://github.com/jsandler18/raspi-kernel/tree/cbab3ed75055e0c74bde36c5752e71575f10958d)
+repo](https://github.com/jsandler18/raspi-kernel/tree/d8a4a821857ef82b14ea7500f653f88388033ffe)
 
 ## Setting up the Exception Vector Table
 Before we can handle IRQs, we must set up exception handlers, and we must set up the [exception vector table](/extra/interrupts.html) to jump to those handlers.

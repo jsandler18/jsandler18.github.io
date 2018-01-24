@@ -12,6 +12,11 @@ Recall the code for boot.S
 .global _start
 
 _start:
+    mrc p15, #0, r1, c0, c0, #5
+    and r1, r1, #3
+    cmp r1, #0
+    bne halt
+
     mov sp, #0x8000
 
     ldr r4, =__bss_start
@@ -50,9 +55,19 @@ These are notes to the linker.  The first is about where this code belongs in th
 <br>
 ```
 _start:
+    mrc p15, #0, r1, c0, c0, #5
+    and r1, r1, #3
+    cmp r1, #0
+    bne halt
+```
+These are the first instructions of our kernel.  These lines will send three out of the four cores to `halt`, effectively shutting them down.  Writing an OS is hard, writing a mult-core OS is even harder.
+
+<br>
+```
     mov sp, #0x8000
 ```
-This is the first instruction of our kernel.  It says that our C stack should start at address 0x8000 and grow downwards.  Why 0x8000?
+
+This says that our C stack should start at address 0x8000 and grow downwards.  Why 0x8000?
 Well when the hardware loads our kernel in to memory, it does not load it into address 0, but to address 0x8000.  Since our kernel runs from 0x8000 and up, our stack can safely run from 0x8000 and down without clobbering our kernel.
 
 <br>
