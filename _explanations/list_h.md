@@ -8,7 +8,7 @@ For many kernel operations, it is neccessary to have a linked list data structur
 
 Here is the source for list.h:
 ``` c
-fndef LIST_H
+#ifndef LIST_H
 #define LIST_H
 
 #define DEFINE_LIST(nodeType) \
