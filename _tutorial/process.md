@@ -91,8 +91,10 @@ void schedule(void) {
     process_control_block_t * new_thread, * old_thread;
 
     // If nothing on the run queue, the current process should just continue
-    if (size_pcb_list(&run_queue) == 0)
+    if (size_pcb_list(&run_queue) == 0) {
+        ENABLE_INTERRUPTS();
         return;
+    }
 
     // Get the next thread to run.  For now we are using round-robin
     new_thread = pop_pcb_list(&run_queue);

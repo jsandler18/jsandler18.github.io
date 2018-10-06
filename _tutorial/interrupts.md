@@ -80,7 +80,7 @@ fast_irq_handler_abs_addr:              .word fast_irq_handler
 
 move_exception_vector:
     push    {r4, r5, r6, r7, r8, r9}
-    ldr     r1, =exception_vector
+    ldr     r0, =exception_vector
     mov     r1, #0x0000
     ldmia   r0!,{r2, r3, r4, r5, r6, r7, r8, r9}
     stmia   r1!,{r2, r3, r4, r5, r6, r7, r8, r9}
@@ -118,6 +118,7 @@ typedef struct {
     uint32_t irq_basic_enable;
     uint32_t irq_gpu_disable1;
     uint32_t irq_gpu_disable2;
+    uint32_t irq_basic_disable;
 } interrupt_registers_t;
 ```
 
