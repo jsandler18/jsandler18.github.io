@@ -48,7 +48,7 @@ Let's step through this line by line
 ```
 .section ".text.boot"
 
-.globl _start
+.global _start
 ```
 These are notes to the linker.  The first is about where this code belongs in the compiled binary.  In a little bit, we are going to specify where that is.  The second specifies that \_start is a name that should be visible from outside of the assembly file
 
