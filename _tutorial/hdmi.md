@@ -53,7 +53,7 @@ typedef struct {
     uint32_t depth;
     uint32_t ignorex;
     uint32_t ignorey;
-    void * pointer;;
+    void * pointer;
     uint32_t size;
 } fb_init_t;
 
